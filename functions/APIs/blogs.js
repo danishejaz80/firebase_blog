@@ -1,6 +1,5 @@
 const { db } = require('../utils/admin');
-const fallbackError = require('../utils/helpers')
-const isEmpty = require('../utils/helpers')
+const { fallbackError, isEmpty } = require('../utils/helpers')
 
 exports.getAllBlogs = (request, response) => {
     db.collection('blogs').orderBy('createdAt', 'desc')
@@ -48,7 +47,7 @@ exports.createBlog = (request, response) => {
 };
 
 exports.getBlog = (request, response) => {
-    if (isEmpty(request?.params?.id || '')) return response.status(400).json({ error: { id: 'Must not be empty' } });
+    if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
 
     const document = db.doc(`/blogs/${request.params.id}`);
     document.get().then((doc) => {
@@ -62,7 +61,7 @@ exports.getBlog = (request, response) => {
 };
 
 exports.editBlog = (request, response) => {
-    if (isEmpty(request?.params?.id || '')) return response.status(400).json({ error: { id: 'Must not be empty' } });
+    if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
 
     if (request?.body?.id || request.body.createdAt) {
         response.status(403).json({ error: 'Not allowed to edit with this payload' });
@@ -78,7 +77,7 @@ exports.editBlog = (request, response) => {
 };
 
 exports.deleteBlog = (request, response) => {
-    if (isEmpty(request?.params?.id || '')) return response.status(400).json({ error: { id: 'Must not be empty' } });
+    if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
 
     const document = db.doc(`/blogs/${request.params.id}`);
     document.get().then((doc) => {

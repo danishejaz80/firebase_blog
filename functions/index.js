@@ -3,6 +3,13 @@ const app = require('express')();
 const auth = require('./utils/auth');
 
 const {
+    loginUser,
+    signUpUser,
+    getUser,
+    updateUser
+} = require('./APIs/users')
+
+const {
     getAllBlogs,
     getBlog,
     createBlog,
@@ -11,11 +18,12 @@ const {
 } = require('./APIs/blogs')
 
 const {
-    loginUser,
-    signUpUser,
-    getUser,
-    updateUser
-} = require('./APIs/users')
+    createBlogComment,
+    getBlogComments,
+    createBlogCommentWithAuth, 
+    editBlogComment,
+    deleteBlogComment
+} = require('./APIs/blog_comments')
 
 // Auth
 app.post('/login', loginUser);
@@ -31,5 +39,12 @@ app.get('/blog/:id', getBlog);
 app.post('/blog', auth, createBlog);
 app.put('/blog/:id', auth, editBlog);
 app.delete('/blog/:id', auth, deleteBlog);
+
+// Blog Comments
+app.get('/blog_comments/:blogId', getBlogComments);
+app.post('/blog_comment', createBlogComment);
+app.post('/blog_comment_with_auth', auth, createBlogCommentWithAuth);
+app.put('/blog_comment/:id', auth, editBlogComment);
+app.delete('/blog_comment/:id', auth, deleteBlogComment);
 
 exports.api = functions.https.onRequest(app);

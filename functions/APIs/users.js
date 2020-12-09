@@ -29,7 +29,7 @@ exports.loginUser = (request, response) => {
 };
 
 exports.signUpUser = (request, response) => {
-    const { firstName, lastName, email, phoneNumber, password, confirmPassword, username } = request.body || {};
+    const { firstName, lastName, email, phoneNumber, password, username } = request.body || {};
 
     const newUser = {
         firstName,
@@ -37,9 +37,9 @@ exports.signUpUser = (request, response) => {
         email,
         phoneNumber,
         password,
-        confirmPassword,
         username,
         role: 'subscriber',
+        isVerified: false
     };
 
     const { valid, error } = validateSignUpData(newUser);
@@ -61,13 +61,9 @@ exports.signUpUser = (request, response) => {
         })
         .then((tokenId) => {
             token = tokenId;
+            delete newUser.password
             const userData = {
-                firstName: newUser.firstName,
-                lastName: newUser.lastName,
-                username: newUser.username,
-                phoneNumber: newUser.phoneNumber,
-                role: newUser.role,
-                email: newUser.email,
+                ...newUser,
                 createdAt: new Date().toISOString(),
                 userId
             };
