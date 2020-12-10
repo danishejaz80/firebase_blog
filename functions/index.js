@@ -6,7 +6,8 @@ const {
     loginUser,
     signUpUser,
     getUser,
-    updateUser
+    updateUser,
+    sendVerificationEmail
 } = require('./APIs/users')
 
 const {
@@ -20,10 +21,14 @@ const {
 const {
     createBlogComment,
     getBlogComments,
-    createBlogCommentWithAuth, 
+    createBlogCommentWithAuth,
     editBlogComment,
     deleteBlogComment
 } = require('./APIs/blog_comments')
+
+const {
+    getAllMedia
+} = require('./APIs/media')
 
 // Auth
 app.post('/login', loginUser);
@@ -47,4 +52,7 @@ app.post('/blog_comment_with_auth', auth, createBlogCommentWithAuth);
 app.put('/blog_comment/:id', auth, editBlogComment);
 app.delete('/blog_comment/:id', auth, deleteBlogComment);
 
-exports.api = functions.https.onRequest(app);
+app.get('/media', auth, getAllMedia);
+
+const api = functions.https.onRequest(app);
+module.exports = { sendVerificationEmail, api }

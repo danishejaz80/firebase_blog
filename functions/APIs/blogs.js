@@ -47,8 +47,6 @@ exports.createBlog = (request, response) => {
 };
 
 exports.getBlog = (request, response) => {
-    if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
-
     const document = db.doc(`/blogs/${request.params.id}`);
     document.get().then((doc) => {
         if (!doc.exists) return response.status(404).json({ error: 'Blog not found' })
@@ -61,8 +59,6 @@ exports.getBlog = (request, response) => {
 };
 
 exports.editBlog = (request, response) => {
-    if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
-
     if (request?.body?.id || request.body.createdAt) {
         response.status(403).json({ error: 'Not allowed to edit with this payload' });
     }
@@ -77,8 +73,6 @@ exports.editBlog = (request, response) => {
 };
 
 exports.deleteBlog = (request, response) => {
-    if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
-
     const document = db.doc(`/blogs/${request.params.id}`);
     document.get().then((doc) => {
         if (!doc.exists) return response.status(404).json({ error: 'Blog not found' })

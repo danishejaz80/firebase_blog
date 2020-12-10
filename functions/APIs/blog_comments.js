@@ -1,5 +1,6 @@
 const { fallbackError, isEmpty } = require('../utils/helpers')
-const { db } = require('../utils/admin');
+const { admin, db } = require('../utils/admin');
+const firebase = require('firebase');
 
 exports.createBlogComment = (request, response) => {
     const { text, blogId } = request.body || {};
@@ -11,7 +12,7 @@ exports.createBlogComment = (request, response) => {
         text,
         blogId,
         isRead: false,
-        createdAt: new Date().toISOString()
+        createdAt: admin.database.ServerValue.TIMESTAMP
     }
 
     db.collection('blog_comments').add(newBlogCommentItem).then((doc) => {
@@ -74,14 +75,8 @@ exports.getBlogComments = (request, response) => {
 
 exports.editBlogComment = async (request, response) => {
     try {
-        if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
-
-        if (request?.body?.id || request.body.createdAt) {
-            response.status(403).json({ error: 'Not allowed to edit with this payload' });
-        }
-
-        let document = db.collection('blog_comments').doc(`${request.params.id}`);
-        let doc = await document.get();
+        const document = db.collection('blog_comments').doc(`${request.params.id}`);
+        const doc = await document.get();
 
         if (!doc.exists) return response.status(404).json({ error: 'Comment not found' })
 
@@ -91,29 +86,27 @@ exports.editBlogComment = async (request, response) => {
 
         await document.update(request.body)
         response.status(200).json({ message: 'Comment updated successfully' })
-    }
-    catch (err) {
+    } catch (err) {
         console.error(err);
         response.status(500).json({ error: err || fallbackError });
     }
 };
 
-exports.deleteBlogComment = (request, response) => {
-    if (isEmpty(request?.params?.id)) return response.status(400).json({ error: { id: 'Must not be empty' } });
+exports.deleteBlogComment = async (request, response) => {
+    try {
+        const document = db.doc(`/blog_comments/${request.params.id}`);
+        const doc = await document.get()
 
-    const document = db.doc(`/blog_comments/${request.params.id}`);
-    document.get().then((doc) => {
         if (!doc.exists) return response.status(404).json({ error: 'Comment not found' })
 
         if (doc.data().userId !== request.user.userId && request.user.role !== 'admin') {
             return response.status(403).json({ error: "UnAuthorized" })
         }
 
-        return document.delete();
-    }).then(() => {
+        document.delete();
         response.json({ message: 'Comment delete successfully' });
-    }).catch((err) => {
+    } catch (err) {
         console.error(err);
-        return response.status(500).json({ error: err || fallbackError });
-    });
+        response.status(500).json({ error: err || fallbackError });
+    }
 };
