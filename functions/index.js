@@ -1,13 +1,17 @@
 const functions = require('firebase-functions');
 const app = require('express')();
 const auth = require('./utils/auth');
+const cors = require('cors');
+
+app.use(cors());
+app.options('*', cors());
 
 const {
     loginUser,
     signUpUser,
     getUser,
     updateUser,
-    sendVerificationEmail
+    logout
 } = require('./APIs/users')
 
 const {
@@ -33,6 +37,7 @@ const {
 // Auth
 app.post('/login', loginUser);
 app.post('/signup', signUpUser);
+app.post('/logout', logout);
 
 // Users
 app.get('/user', auth, getUser);
@@ -55,4 +60,4 @@ app.delete('/blog_comment/:id', auth, deleteBlogComment);
 app.get('/media', auth, getAllMedia);
 
 const api = functions.https.onRequest(app);
-module.exports = { sendVerificationEmail, api }
+module.exports = { api }

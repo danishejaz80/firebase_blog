@@ -8,55 +8,31 @@ const { sendEmail } = require('../utils/sendEmail');
 
 firebase.initializeApp(config);
 
-exports.loginUser = (request, response) => {
-    const { email, password } = request.body || {};
-
-    const user = {
-        email,
-        password
-    }
-
-    const { valid, error } = validateLoginData(user);
-    if (!valid) return response.status(400).json({ error });
-
-    firebase.auth().signInWithEmailAndPassword(user.email, user.password)
-        .then((data) => {
-            if (!data.user.emailVerified) {
-                return response.status(403).json({ error: "Please verify your account before sign in" });
-            }
-            return data.user.getIdToken();
-        }).then((token) => {
-            return response.json({ token });
-        }).catch((err) => {
-            console.error(err);
-            return response.status(403).json({ error: err || fallbackError });
-        })
-};
-
-exports.sendVerificationEmail = functions.auth.user().onCreate((user) => {
+exports.loginUser = async (request, response) => {
     try {
-        console.log('user----->', user)
-        db.collection('new_user').add(user)
+        const user = { email, password } = request.body || {};
+
+        const { valid, error } = validateLoginData(user);
+        if (!valid) return response.status(400).json({ error });
+
+        const data = await firebase.auth().signInWithEmailAndPassword(user.email, user.password)
+
+        if (!data.user.emailVerified) {
+            return response.status(403).json({ error: "Please verify your account before sign in" });
+        }
+
+        data.user.getIdToken().then(token => {
+            return response.json({ token, user: data.user });
+        })
     } catch (err) {
         console.error(err);
-        response.status(500).json({ error: err || fallbackError });
+        return response.status(403).json({ error: err || fallbackError });
     }
-});
+};
 
 exports.signUpUser = async (request, response) => {
     const newUser = { firstName, lastName, email, phoneNumber, password, username, confirmPassword } = request.body || {};
-    newUser.role =  'subscriber';
-    // const newUser = {
-    //     firstName,
-    //     lastName,
-    //     email,
-    //     phoneNumber,
-    //     password,
-    //     confirmPassword,
-    //     username,
-    //     role: 'subscriber',
-    //     isVerified: false
-    // };
+    newUser.role = 'subscriber';
 
     try {
         const { valid, error } = validateSignUpData(newUser);
@@ -107,9 +83,6 @@ exports.signUpUser = async (request, response) => {
                 console.log(error)
             });
 
-        // return data.user.getIdToken()
-        // })
-
         delete newUser.password
         delete newUser.confirmPassword
         token = data.user.getIdToken()
@@ -120,7 +93,7 @@ exports.signUpUser = async (request, response) => {
         };
         await db.doc(`/users/${newUser.username}`).set(userData);
 
-         return response.status(201).json({ token:token.i, message: 'User created successfully' });
+        return response.status(201).json({ token: token.i, message: 'User created successfully' });
 
     }
     catch (err) {
@@ -132,6 +105,15 @@ exports.signUpUser = async (request, response) => {
         }
     }
 
+}
+
+exports.logout = (request, response) => {
+    firebase.auth().signOut().then(() => {
+        return response.status(200).json({ message:"Logged out successfully" })
+    }).catch((err) => {
+        console.error(err);
+        return response.status(500).json({ error: err || fallbackError });
+    });
 }
 
 exports.getUser = (request, response) => {

@@ -1,18 +1,9 @@
-import {combineReducers} from 'redux'
-import sagaHelpersReducer from "./sagaHelpers";
-import forkSpawnExampleReducer from './forkSpwanExample';
-import nonBlockingCallsExampleReducer from './nonBlockingCalls';
-import blockingCallsExampleReducer from './blockingCalls';
-import parallelCallsExampleReducer from './parallel';
+import { connectRouter } from 'connected-react-router'
+import Auth from './Auth'
 
+const Reducers = (history) => ({
+    router: connectRouter(history),
+    auth: Auth
+})
 
-const reducer = combineReducers({
-  sagaHelpersExample: sagaHelpersReducer,
-  forkSpawnExample: forkSpawnExampleReducer,
-  nonBlockingCallsExample: nonBlockingCallsExampleReducer,
-  blockingCallsExample: blockingCallsExampleReducer,
-  parallelCallsExample: parallelCallsExampleReducer,
-});
-
-
-export default reducer;
+export default Reducers

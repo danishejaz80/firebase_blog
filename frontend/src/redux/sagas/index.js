@@ -1,17 +1,8 @@
-import { forkSpawnExampleMain } from './forkSpawnExample'
-import { runNonBlockingCallsExample } from './nonBlockingCalls'
-import { runBlockingCallsExample } from './blockingCalls'
-import { getUsersTakeEvery, getUsersTakeLatest, getUsersThrottle } from './sagaHelpers'
-import { runParallelCallsExample } from './parallel'
+import { all } from 'redux-saga/effects'
+import Auth from './Auth'
 
-export default function* rootSaga() {
-  yield [
-    forkSpawnExampleMain(),
-    runNonBlockingCallsExample(),
-    runBlockingCallsExample(),
-    getUsersTakeLatest(),
-    getUsersTakeEvery(),
-    getUsersThrottle(),
-    runParallelCallsExample()
-  ]
+export default function* rootSaga(getState) {
+    yield all([
+        Auth
+    ])
 }
